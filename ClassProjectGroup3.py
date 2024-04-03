@@ -133,18 +133,22 @@ while True:
               
     elif choice == '2':
         
-        df_cleaned, current_time = process_data(df_filtered)
+        if len(df_filtered) == 0:
+            print ("Please load data firstly")
+        else:
 
-        # Print the cleaned DataFrame and its dimensions
-        print("\nProcessing input data set:")
-        print("**********************************")
+            df_cleaned, current_time = process_data(df_filtered)
 
-        print(df_cleaned.head())
-        print(f"\nDimensions after cleaning: {df_cleaned.shape}")
+            # Print the cleaned DataFrame and its dimensions
+            print("\nProcessing input data set:")
+            print("**********************************")
 
-        # Calculate and print the time taken to clean the data
-        cleaning_time = (datetime.now() - current_time).total_seconds()
-        print(f"\nTime to clean data is: {cleaning_time} seconds.")
+            print(df_cleaned.head())
+            print(f"\nDimensions after cleaning: {df_cleaned.shape}")
+
+            # Calculate and print the time taken to clean the data
+            cleaning_time = (datetime.now() - current_time).total_seconds()
+            print(f"\nTime to clean data is: {cleaning_time} seconds.")
 
     elif choice == '3':
         print_answers()
