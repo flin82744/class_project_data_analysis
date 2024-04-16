@@ -39,6 +39,10 @@ def process_data(df):
                         'Visibility(mi)', 'Weather_Condition', 'Country']
     
     df_cleaned = df.dropna(subset=required_columns)
+    
+    # Check for null values in the specified columns
+    # null_check = df_cleaned[required_columns].notnull()
+    # print(null_check)
 
     # 2 Eliminate rows with empty values in 3 or more columns
     df_cleaned = df_cleaned.dropna(thresh=len(df_cleaned.columns) - 3)
@@ -133,11 +137,22 @@ def q7_answer(df_cleaned, city):
     df_state['Month'] = df_state['Start_Time'].dt.month_name()
 
     # Get the three most common weather conditions per month
-    most_common_conditions = df_state.groupby(['Month', 'Weather_Condition'])['ID'].count().reset_index(name='AccidentCount')
-    most_common_conditions = most_common_conditions.sort_values(['Month', 'AccidentCount'], ascending=[True, False])
-    most_common_conditions = most_common_conditions.groupby('Month').head(3)
+    most_common_conditions = df_state.groupby(['Weather_Condition'])['ID'].count().reset_index(name='AccidentCount')
+    most_common_conditions = most_common_conditions.sort_values(['AccidentCount'], ascending=False)
+    most_common_conditions = most_common_conditions.head(3)
 
-    return most_common_conditions
+    return df_state, most_common_conditions
+
+def q7_answer_display_month(df_state, most_common_conditions, row, col):
+
+    # The conditions of the most accident
+    first_value = str(most_common_conditions.iloc[row,col])
+    first_df = df_state[df_state['Weather_Condition'] == first_value]
+    first_df = first_df.copy()
+    first_df['Month'] = first_df['Start_Time'].dt.month
+    first_df_by_month = first_df.groupby(['Month'])['ID'].count().reset_index(name='AccidentCount').sort_values(['AccidentCount'], ascending=False)
+
+    return first_value, first_df_by_month
 
 def q8_answer(df_cleaned, state, severity):
     # Filter the DataFrame by severity and state
@@ -192,7 +207,7 @@ def search_accidents_by_location(df_cleaned, state=None, city=None, zip_code=Non
         filtered_df = df_cleaned
     accident_count = len(filtered_df)
 
-    return accident_count
+    return accident_count, filtered_df
 
 
 def search_accidents_by_date(df_cleaned, year=None, month=None, day=None):
@@ -361,8 +376,14 @@ while True:
             print(f"The average of humidity and temerature: \n{df_q6}\n")
 
             print("What are the 3 most common weather conditions (weather_conditions) when accidents occurred in New York? display the data per month.\n")
-            df_q7 = q7_answer(df_cleaned, 'New York')
-            print(f"The 3 most common in New York: \n{df_q7}\n")
+            df_q7_NY, df_q7_most_three = q7_answer(df_cleaned, 'New York')
+            df_q7_1, df_q7_2 = q7_answer_display_month(df_q7_NY, df_q7_most_three, 0, 0)
+            print(f"The 3 most common in New York: \n{df_q7_most_three}\n")
+            print(f"The first common is {df_q7_1}: \n{df_q7_2}\n")
+            df_q7_3, df_q7_4 = q7_answer_display_month(df_q7_NY, df_q7_most_three, 1, 0)
+            print(f"The second common is {df_q7_3}: \n{df_q7_4}\n")
+            df_q7_5, df_q7_6 = q7_answer_display_month(df_q7_NY, df_q7_most_three, 2, 0)
+            print(f"The third common is {df_q7_5}: \n{df_q7_6}\n")
 
             print("What was the maximum visibility of all accidents of severity 2 that occurred in the state of New Hampshire?\n")
             df_q8 = q8_answer(df_cleaned, 'NH', 2)
@@ -384,8 +405,10 @@ while True:
         else:
             print("Search Accidents: ")
             print("********************************************")
-            res = search_accidents_by_location(df_cleaned)
+            res, data = search_accidents_by_location(df_cleaned)
             print(f"There were {res} accidents.\n")
+            pd.set_option('display.max_rows', None)
+            print(data[['Severity', 'Zipcode', 'Start_Time', 'End_Time', 'Visibility(mi)', 'Weather_Condition']])
 
     elif choice == '5':
         if len(df_cleaned) == 0:
