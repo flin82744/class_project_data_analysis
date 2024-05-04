@@ -254,129 +254,114 @@ def q10_answer(df_cleaned, location, months):
 
 
 def search_accidents_by_location(df_cleaned):
-    #getting the users to put in their inputs
-    city = input("Enter city: ").strip()
-    state = input("Enter state: ").strip()
+    #making sure that the data isn't empty, cuz if it is we will print our statement
+    #and return an empty dataframe to prevent an error 
+    if df_cleaned.empty:
+        print("The dataset is empty. No data to search.")
+        return 0, pd.DataFrame()  
+
+    #turning user inputs into lowercase
+    city = input("Enter city: ").strip().lower()
+    state = input("Enter state: ").strip().lower()
     zip_code = input("Enter zip code: ").strip()
     filters = []
-
-    #adding filters and making sure their inputs are correct
+    
+    #added filters, and made it take both lowercase and uppercase states and cities
     if state:
         if not state.isalpha():
             print("Invalid input for state. Please enter only letters.")
         else:
-            filters.append(df_cleaned['State'] == state)
+            filters.append(df_cleaned['State'].str.lower() == state)
     if city:
         if not city.replace(" ", "").isalpha():
             print("Invalid input for city. Please enter only letters.")
         else:
-            filters.append(df_cleaned['City'] == city)
+            filters.append(df_cleaned['City'].str.lower() == city)
     if zip_code:
         if not zip_code.isdigit():
             print("Invalid input for zip code. Please enter only numbers.")
         else:
             filters.append(df_cleaned['Zipcode'] == zip_code)
 
-
-    #applying more filters
+    #filters and error catching
     if filters:
-        mask = filters[0]
-        for f in filters[1:]:
-            mask &= f
-        filtered_df = df_cleaned[mask]
+        try:
+            mask = filters[0]
+            for f in filters[1:]:
+                mask &= f
+            filtered_df = df_cleaned[mask]
+        except Exception as e:
+            print(f"An error occurred while filtering the data: {e}")
+            return 0, pd.DataFrame()
     else:
         filtered_df = df_cleaned
 
-    #showing how many accidents there are
+    #then printing out he amounts of accidents in that city/state/areacode
     accident_count = len(filtered_df)
+    if accident_count == 0:
+        print("No accidents found for the given criteria.")
     return accident_count, filtered_df
 
 def search_accidents_by_date(df_cleaned):
-    valid_filters = True
+    #like in the previous S1, we check if the data frame is empty
+    if df_cleaned.empty:
+        print("The dataset is empty. No data to search.")
+        return 0
 
+    
+    valid_filters = True  
+    #ask the user if the year, month and day they want to enter
     year = input("Enter year: ").strip()
     month = input("Enter month: ").strip()
     day = input("Enter day: ").strip()
     filters = []
 
-    if year:
-        if not year.isdigit() or len(year) != 4:
-            print("Invalid input for year. Please enter a four-digit year.")
-            valid_filters = False
-        else:
-            filters.append(df_cleaned['Start_Time'].dt.year == int(year))
-    if month:
-        if not month.isdigit() or not 1 <= int(month) <= 12:
-            print("Invalid input for month. Please enter a month number between 1 and 12.")
-            valid_filters = False
-        else:
-            filters.append(df_cleaned['Start_Time'].dt.month == int(month))
-    if day:
-        if not day.isdigit() or not 1 <= int(day) <= 31:
-            print("Invalid input for day. Please enter a day number between 1 and 31.")
-            valid_filters = False
-        else:
-            filters.append(df_cleaned['Start_Time'].dt.day == int(day))
-
-    if filters and valid_filters:
-        mask = filters[0]
-        for f in filters[1:]:
-            mask &= f
-        filtered_df = df_cleaned[mask]
-    else:
-
-        if not valid_filters:
-            print("Please correct the errors and try again.")
-            return 0
-        filtered_df = pd.DataFrame()
-
-    accident_count = len(filtered_df)
-
-    if accident_count == 0:
-        print("No accidents found for the specified date.")
-
-    return accident_count
-
-
     try:
-        year = input("Enter year: ").strip()
-        month = input("Enter month: ").strip()
-        day = input("Enter day: ").strip()
-
-        filters = []
+        #check if the input and filter are valid 
         if year:
             if not year.isdigit() or len(year) != 4:
                 print("Invalid input for year. Please enter a four-digit year.")
+                valid_filters = False  
             else:
                 filters.append(df_cleaned['Start_Time'].dt.year == int(year))
+
+        #check if month input and filter are also valid
         if month:
             if not month.isdigit() or not 1 <= int(month) <= 12:
                 print("Invalid input for month. Please enter a month number between 1 and 12.")
+                valid_filters = False  
             else:
                 filters.append(df_cleaned['Start_Time'].dt.month == int(month))
+
+        #same as previous, this time just for day
         if day:
             if not day.isdigit() or not 1 <= int(day) <= 31:
                 print("Invalid input for day. Please enter a day number between 1 and 31.")
+                valid_filters = False 
             else:
                 filters.append(df_cleaned['Start_Time'].dt.day == int(day))
 
-        if filters:
+        #keep checking if the filters are valid
+        if filters and valid_filters:
             mask = filters[0]
             for f in filters[1:]:
-                mask &= f
+                mask &= f 
             filtered_df = df_cleaned[mask]
         else:
-            filtered_df = df_cleaned
+            #print, if there are any errors 
+            if not valid_filters:
+                print("Please correct the errors and try again.")
+                return 0  
+            filtered_df = pd.DataFrame() 
 
+        # we print out our number of accidents 
         accident_count = len(filtered_df)
-
         if accident_count == 0:
             print("No accidents found for the specified date.")
-
         return accident_count
-
     except Exception as e:
-        print(f"An error occurred: {e}")
+        #and throw out an error if any happened during the process
+        print(f"An error occurred during the search: {e}")
         return 0
 
 
