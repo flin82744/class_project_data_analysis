@@ -375,7 +375,9 @@ def search_accidents_by_date(df_cleaned):
 
 
 def search_accidents_by_conditions(df_cleaned):
+    # Starting try block to catch invalid inputs
     try:
+        # Prompt user to enter the temperature and visibility ranges
         temp_min_input = input("Enter minimum temperature: ")
         temp_max_input = input("Enter maximum temperature: ")
         vis_min_input = input("Enter minimum visibility: ")
@@ -383,13 +385,14 @@ def search_accidents_by_conditions(df_cleaned):
 
         filters = []
 
+        #validating minimum, maximum for temperature and visibility
         if temp_min_input:
             temp_min = float(temp_min_input)
             filters.append(df_cleaned['Temperature(F)'] >= temp_min)
         if temp_max_input:
             temp_max = float(temp_max_input)
             if temp_min_input and temp_min > temp_max:
-                print("Minimum tempereature cannot be greater than maximum temperature .")
+                print("Minimum temperature cannot be greater than maximum temperature.")
                 return 0
             filters.append(df_cleaned['Temperature(F)'] <= temp_max)
         if vis_min_input:
@@ -401,20 +404,24 @@ def search_accidents_by_conditions(df_cleaned):
                 print("Minimum visibility cannot be greater than maximum visibility.")
                 return 0
             filters.append(df_cleaned['Visibility(mi)'] <= vis_max)
+        #more filtering for the dataframe
         if filters:
             mask = filters[0]
             for f in filters[1:]:
-                mask &= f
+                mask &= f  
             filtered_df = df_cleaned[mask]
         else:
-            filtered_df = df_cleaned
+            filtered_df = df_cleaned 
 
+        #throwing out the number of accidents 
         accident_count = len(filtered_df)
         return accident_count
 
     except ValueError:
+        #for float error cases
         print("Invalid input. Please enter a valid number.")
         return 0
+
 
 def quit_program():
     print("Quitting program...")
