@@ -588,21 +588,20 @@ while True:
 
             start_time = datetime.now()
             df_cleaned = process_data(df_filtered)
-            if df_cleaned is None:
-                break
-            current_time = datetime.now()
-            # Print the cleaned DataFrame and its dimensions
-            print(Color.GREEN)
-            print("\nProcessing input data set:")
-            print("**********************************")
-            print(f"[{start_time}] Performing Data Clean Up")
-            total_rows = len(df_cleaned)
-            print(f"[{current_time}] Total Rows Read after cleaning is:{total_rows}")
-            # Calculate and print the time taken to clean the data
-            cleaning_time = (current_time - start_time).total_seconds()
-            total_time += cleaning_time/60
-            print(f"\nTime to process is: {cleaning_time} seconds.\n")
-            print(Color.RESET)
+            if df_cleaned is not None:
+                current_time = datetime.now()
+                # Print the cleaned DataFrame and its dimensions
+                print(Color.GREEN)
+                print("\nProcessing input data set:")
+                print("**********************************")
+                print(f"[{start_time}] Performing Data Clean Up")
+                total_rows = len(df_cleaned)
+                print(f"[{current_time}] Total Rows Read after cleaning is:{total_rows}")
+                # Calculate and print the time taken to clean the data
+                cleaning_time = (current_time - start_time).total_seconds()
+                total_time += cleaning_time/60
+                print(f"\nTime to process is: {cleaning_time} seconds.\n")
+                print(Color.RESET)
 
     elif choice == '3':
         if df_cleaned is None or len(df_cleaned) == 0:
