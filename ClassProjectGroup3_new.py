@@ -28,14 +28,14 @@ def read_file_from_directory(directory_path):
         if not csv_files:
             raise FileNotFoundError("No CSV files found in the directory.")
 
-    except FileNotFoundError as e: 
+    except FileNotFoundError as e:
         print(f"Error: {e}\n")
         return None
     return csv_files
 
 # Load Data Function:
 # Input: an csv file path
-# Output: a data frame with 18 specific column 
+# Output: a data frame with 18 specific column
 
 def load_data(file_path):
 
@@ -96,8 +96,8 @@ def process_data(df):
         df_cleaned['Zipcode'] = df_cleaned['Zipcode'].astype(str).str[:5]
 
         # Eliminate rows with zero time duration
-        df_cleaned['Start_Time'] = pd.to_datetime(df_cleaned['Start_Time'], format='mixed')
-        df_cleaned['End_Time'] = pd.to_datetime(df_cleaned['End_Time'], format='mixed')
+        df_cleaned['Start_Time'] = pd.to_datetime(df_cleaned['Start_Time'], errors='coerce')
+        df_cleaned['End_Time'] = pd.to_datetime(df_cleaned['End_Time'], errors='coerce')
         df_cleaned = df_cleaned[df_cleaned['End_Time'] - df_cleaned['Start_Time'] != pd.Timedelta(0)]
 
     except Exception as e:
@@ -282,17 +282,17 @@ def q10_answer(df_cleaned, location, months):
 
 def search_accidents_by_location(df_cleaned):
     #making sure that the data isn't empty, cuz if it is we will print our statement
-    #and return an empty dataframe to prevent an error 
+    #and return an empty dataframe to prevent an error
     if df_cleaned.empty:
         print("The dataset is empty. No data to search.")
-        return 0, pd.DataFrame()  
+        return 0, pd.DataFrame()
 
     #turning user inputs into lowercase
     city = input("Enter city: ").strip().lower()
     state = input("Enter state: ").strip().lower()
     zip_code = input("Enter zip code: ").strip()
     filters = []
-    
+
     #added filters, and made it take both lowercase and uppercase states and cities
     if state:
         if not state.isalpha():
@@ -335,8 +335,8 @@ def search_accidents_by_date(df_cleaned):
         print("The dataset is empty. No data to search.")
         return 0
 
-    
-    valid_filters = True  
+
+    valid_filters = True
     #ask the user if the year, month and day they want to enter
     year = input("Enter year: ").strip()
     month = input("Enter month: ").strip()
@@ -344,11 +344,11 @@ def search_accidents_by_date(df_cleaned):
     filters = []
 
     try:
-        #check if the input and filter are valid 
+        #check if the input and filter are valid
         if year:
             if not year.isdigit() or len(year) != 4:
                 print("Invalid input for year. Please enter a four-digit year.")
-                valid_filters = False  
+                valid_filters = False
             else:
                 filters.append(df_cleaned['Start_Time'].dt.year == int(year))
 
@@ -356,7 +356,7 @@ def search_accidents_by_date(df_cleaned):
         if month:
             if not month.isdigit() or not 1 <= int(month) <= 12:
                 print("Invalid input for month. Please enter a month number between 1 and 12.")
-                valid_filters = False  
+                valid_filters = False
             else:
                 filters.append(df_cleaned['Start_Time'].dt.month == int(month))
 
@@ -364,7 +364,7 @@ def search_accidents_by_date(df_cleaned):
         if day:
             if not day.isdigit() or not 1 <= int(day) <= 31:
                 print("Invalid input for day. Please enter a day number between 1 and 31.")
-                valid_filters = False 
+                valid_filters = False
             else:
                 filters.append(df_cleaned['Start_Time'].dt.day == int(day))
 
@@ -372,16 +372,16 @@ def search_accidents_by_date(df_cleaned):
         if filters and valid_filters:
             mask = filters[0]
             for f in filters[1:]:
-                mask &= f 
+                mask &= f
             filtered_df = df_cleaned[mask]
         else:
-            #print, if there are any errors 
+            #print, if there are any errors
             if not valid_filters:
                 print("Please correct the errors and try again.")
-                return 0  
-            filtered_df = pd.DataFrame() 
+                return 0
+            filtered_df = pd.DataFrame()
 
-        # we print out our number of accidents 
+        # we print out our number of accidents
         accident_count = len(filtered_df)
         if accident_count == 0:
             print("No accidents found for the specified date.")
@@ -464,7 +464,7 @@ def test_all():
 
     return pass_test
 
-# Test load_data function: load an error file and get None 
+# Test load_data function: load an error file and get None
 def test_load_data():
     pass_load = False
     test_df = load_data(test_file_path)
@@ -528,14 +528,14 @@ while True:
     choice = input("Enter your choice: ")
 
     if choice == '1':
-        
+
         # read files from directory
         directory_path = './'
         csv_files = read_file_from_directory(directory_path)
-        
+
         if csv_files is None:
             break
-        
+
         print(Color.GREEN)
         print("\nCSV Files in the Directory, enter # to choose:")
         for index, csv_file in enumerate(csv_files):
@@ -543,7 +543,7 @@ while True:
 
         start_time = datetime.now()
         input_index = input("\nLoading and cleaning input data set:")
-       
+
         confirm_file_path = None
         try:
             new_index = int(input_index)
