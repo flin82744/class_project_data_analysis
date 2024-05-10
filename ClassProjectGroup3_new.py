@@ -16,6 +16,11 @@ from datetime import datetime
 # Load Data, Process Data, And Integration
 # By Fang Lin
 ################################################
+
+# Scan file from directory
+# Input: the path
+# Output: an array of the file name
+
 def read_file_from_directory(directory_path):
     try:
         files_list = os.listdir(directory_path)
@@ -78,26 +83,26 @@ def process_data(df):
     required_columns = ['ID', 'Severity', 'Zipcode', 'Start_Time', 'End_Time',
                         'Visibility(mi)', 'Weather_Condition', 'Country']
 
-    df_cleaned = df.dropna(subset=required_columns)
+    try:
+        df_cleaned = df.dropna(subset=required_columns)
 
-    # Check for null values in the specified columns
-    # null_check = df_cleaned[required_columns].notnull()
-    # print(null_check)
+        # Eliminate rows with empty values in 3 or more columns
+        df_cleaned = df_cleaned.dropna(thresh=len(df_cleaned.columns) - 3)
 
-    # 2 Eliminate rows with empty values in 3 or more columns
-    df_cleaned = df_cleaned.dropna(thresh=len(df_cleaned.columns) - 3)
+        # Eliminate rows with distance equal to zero
+        df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
 
-    # 3 Eliminate rows with distance equal to zero
-    df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
+        # Consider only the first 5 digits of the zip code
+        df_cleaned['Zipcode'] = df_cleaned['Zipcode'].astype(str).str[:5]
 
-    # 4 Consider only the first 5 digits of the zip code
-    df_cleaned['Zipcode'] = df_cleaned['Zipcode'].astype(str).str[:5]
+        # Eliminate rows with zero time duration
+        df_cleaned['Start_Time'] = pd.to_datetime(df_cleaned['Start_Time'], format='mixed')
+        df_cleaned['End_Time'] = pd.to_datetime(df_cleaned['End_Time'], format='mixed')
+        df_cleaned = df_cleaned[df_cleaned['End_Time'] - df_cleaned['Start_Time'] != pd.Timedelta(0)]
 
-    # 5 Eliminate rows with zero time duration
-    df_cleaned['Start_Time'] = pd.to_datetime(df_cleaned['Start_Time'])
-    df_cleaned['End_Time'] = pd.to_datetime(df_cleaned['End_Time'])
-    df_cleaned = df_cleaned[df_cleaned['End_Time'] - df_cleaned['Start_Time'] != pd.Timedelta(0)]
-
+    except Exception as e:
+        print(f"An error occurred during data processing: {e}")
+        return None
     return df_cleaned
 
 #################################################
@@ -560,7 +565,7 @@ while True:
         if (df_filtered is not None):
             print("*******************************************")
             print(f"[{current_time}] Starting Script")
-            print(f"[{current_time}] Loading {file_path}")
+            print(f"[{current_time}] Loading {confirm_file_path}")
 
             # Get the total number of columns and rows in the DataFrame
             total_columns = len(df_filtered.columns)
@@ -583,7 +588,8 @@ while True:
 
             start_time = datetime.now()
             df_cleaned = process_data(df_filtered)
-
+            if df_cleaned is None:
+                break
             current_time = datetime.now()
             # Print the cleaned DataFrame and its dimensions
             print(Color.GREEN)
